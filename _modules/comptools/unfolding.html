@@ -1,0 +1,703 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>comptools.unfolding &mdash; cr-composition  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="cr-composition  documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> cr-composition
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comptools.html"><code class="docutils literal notranslate"><span class="pre">comptools</span></code> API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cr-composition</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>comptools.unfolding</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for comptools.unfolding</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">product</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="n">on_submitter</span> <span class="o">=</span> <span class="s1">&#39;submitter&#39;</span> <span class="ow">in</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+<span class="n">cvmfs_root</span> <span class="o">=</span> <span class="s1">&#39;cvmfs&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;ROOTSYS&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">on_submitter</span> <span class="ow">or</span> <span class="n">cvmfs_root</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ROOT</span> <span class="k">import</span> <span class="n">TH1F</span><span class="p">,</span> <span class="n">TH2F</span><span class="p">,</span> <span class="n">TFile</span>
+        <span class="kn">import</span> <span class="nn">pyunfold</span> <span class="k">as</span> <span class="nn">PyUnfold</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Could not import ROOT / PyUnfold.&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.composition_encoding</span> <span class="k">import</span> <span class="n">get_comp_list</span>
+<span class="kn">from</span> <span class="nn">.base</span> <span class="k">import</span> <span class="n">get_energybins</span><span class="p">,</span> <span class="n">get_paths</span><span class="p">,</span> <span class="n">check_output_dir</span>
+<span class="kn">from</span> <span class="nn">.data_functions</span> <span class="k">import</span> <span class="n">ratio_error</span>
+
+
+<div class="viewcode-block" id="unfolded_counts_dist"><a class="viewcode-back" href="../../comptools.html#comptools.unfolding.unfolded_counts_dist">[docs]</a><span class="k">def</span> <span class="nf">unfolded_counts_dist</span><span class="p">(</span><span class="n">unfolding_df</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert unfolded distributions DataFrame from PyUnfold counts arrays</span>
+<span class="sd">    to a dictionary containing a counts array for each composition.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    unfolding_df : pandas.DataFrame</span>
+<span class="sd">        Unfolding DataFrame returned from PyUnfold.</span>
+<span class="sd">    iteration : int, optional</span>
+<span class="sd">        Specific unfolding iteration to retrieve unfolded counts</span>
+<span class="sd">        (default is -1, the last iteration).</span>
+<span class="sd">    num_groups : int, optional</span>
+<span class="sd">        Number of composition groups (default is 4).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    counts : dict</span>
+<span class="sd">        Dictionary with composition-counts key-value pairs.</span>
+<span class="sd">    counts_sys_err : dict</span>
+<span class="sd">        Dictionary with composition-systematic error key-value pairs.</span>
+<span class="sd">    counts_stat_err : dict</span>
+<span class="sd">        Dictionary with composition-statistical error key-value pairs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">comp_list</span> <span class="o">=</span> <span class="n">get_comp_list</span><span class="p">(</span><span class="n">num_groups</span><span class="o">=</span><span class="n">num_groups</span><span class="p">)</span>
+
+    <span class="n">df_iter</span> <span class="o">=</span> <span class="n">unfolding_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">iteration</span><span class="p">]</span>
+
+    <span class="n">counts</span><span class="p">,</span> <span class="n">counts_sys_err</span><span class="p">,</span> <span class="n">counts_stat_err</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{},</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">composition</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">comp_list</span><span class="p">):</span>
+        <span class="n">counts</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_iter</span><span class="p">[</span><span class="s1">&#39;n_c&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">::</span><span class="n">num_groups</span><span class="p">]</span>
+        <span class="n">counts_sys_err</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_iter</span><span class="p">[</span><span class="s1">&#39;sys_err&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">::</span><span class="n">num_groups</span><span class="p">]</span>
+        <span class="n">counts_stat_err</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_iter</span><span class="p">[</span><span class="s1">&#39;stat_err&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">::</span><span class="n">num_groups</span><span class="p">]</span>
+
+    <span class="n">counts</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">counts</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span> <span class="k">for</span> <span class="n">composition</span> <span class="ow">in</span> <span class="n">comp_list</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">counts_sys_err</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">counts_sys_err</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">composition</span> <span class="ow">in</span> <span class="n">comp_list</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">counts_stat_err</span><span class="p">[</span><span class="s1">&#39;total&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">counts_stat_err</span><span class="p">[</span><span class="n">composition</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">composition</span> <span class="ow">in</span> <span class="n">comp_list</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">counts</span><span class="p">,</span> <span class="n">counts_sys_err</span><span class="p">,</span> <span class="n">counts_stat_err</span></div>
+
+
+<div class="viewcode-block" id="column_normalize"><a class="viewcode-back" href="../../comptools.html#comptools.unfolding.column_normalize">[docs]</a><span class="k">def</span> <span class="nf">column_normalize</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">res_err</span><span class="p">,</span> <span class="n">efficiencies</span><span class="p">,</span> <span class="n">efficiencies_err</span><span class="p">):</span>
+    <span class="n">res_col_sum</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">res_col_sum_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">res_err</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+                                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">res_err</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+
+    <span class="n">normalizations</span><span class="p">,</span> <span class="n">normalizations_err</span> <span class="o">=</span> <span class="n">ratio_error</span><span class="p">(</span>
+                                            <span class="n">res_col_sum</span><span class="p">,</span> <span class="n">res_col_sum_err</span><span class="p">,</span>
+                                            <span class="n">efficiencies</span><span class="p">,</span> <span class="n">efficiencies_err</span><span class="p">,</span>
+                                            <span class="n">nan_to_num</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">res_normalized</span><span class="p">,</span> <span class="n">res_normalized_err</span> <span class="o">=</span> <span class="n">ratio_error</span><span class="p">(</span>
+                                            <span class="n">res</span><span class="p">,</span> <span class="n">res_err</span><span class="p">,</span>
+                                            <span class="n">normalizations</span><span class="p">,</span> <span class="n">normalizations_err</span><span class="p">,</span>
+                                            <span class="n">nan_to_num</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">res_normalized</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">res_normalized</span><span class="p">)</span>
+    <span class="n">res_normalized_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">res_normalized_err</span><span class="p">)</span>
+
+    <span class="c1"># Test that the columns of res_normalized equal efficiencies</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">res_normalized</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">efficiencies</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res_normalized</span><span class="p">,</span> <span class="n">res_normalized_err</span></div>
+
+
+<div class="viewcode-block" id="response_matrix"><a class="viewcode-back" href="../../comptools.html#comptools.unfolding.response_matrix">[docs]</a><span class="k">def</span> <span class="nf">response_matrix</span><span class="p">(</span><span class="n">true_energy</span><span class="p">,</span> <span class="n">reco_energy</span><span class="p">,</span> <span class="n">true_target</span><span class="p">,</span> <span class="n">pred_target</span><span class="p">,</span>
+                    <span class="n">energy_bins</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes energy-composition response matrix</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    true_energy : array_like</span>
+<span class="sd">        Array of true (MC) energies.</span>
+<span class="sd">    reco_energy : array_like</span>
+<span class="sd">        Array of reconstructed energies.</span>
+<span class="sd">    true_target : array_like</span>
+<span class="sd">        Array of true compositions that are encoded to numerical values.</span>
+<span class="sd">    pred_target : array_like</span>
+<span class="sd">        Array of predicted compositions that are encoded to numerical values.</span>
+<span class="sd">    energy_bins : array_like, optional</span>
+<span class="sd">        Energy bins to be used for constructing response matrix (default is</span>
+<span class="sd">        to use energy bins from comptools.get_energybins() function).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    res : numpy.ndarray</span>
+<span class="sd">        Response matrix.</span>
+<span class="sd">    res_err : numpy.ndarray</span>
+<span class="sd">        Uncerainty of the response matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Check that the input array shapes</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">true_energy</span><span class="p">,</span> <span class="n">reco_energy</span><span class="p">,</span> <span class="n">true_target</span><span class="p">,</span> <span class="n">pred_target</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">energy_bins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">energy_bins</span> <span class="o">=</span> <span class="n">get_energybins</span><span class="p">()</span><span class="o">.</span><span class="n">energy_bins</span>
+    <span class="n">num_ebins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">energy_bins</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">num_groups</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="n">true_target</span><span class="p">,</span> <span class="n">pred_target</span><span class="p">]))</span>
+
+    <span class="n">true_ebin_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">true_energy</span><span class="p">,</span> <span class="n">energy_bins</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">reco_ebin_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">digitize</span><span class="p">(</span><span class="n">reco_energy</span><span class="p">,</span> <span class="n">energy_bins</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_ebins</span> <span class="o">*</span> <span class="n">num_groups</span><span class="p">,</span> <span class="n">num_ebins</span> <span class="o">*</span> <span class="n">num_groups</span><span class="p">))</span>
+    <span class="n">bin_iter</span> <span class="o">=</span> <span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_ebins</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_ebins</span><span class="p">),</span>
+                       <span class="nb">range</span><span class="p">(</span><span class="n">num_groups</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_groups</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">true_ebin</span><span class="p">,</span> <span class="n">reco_ebin</span><span class="p">,</span> <span class="n">true_target_bin</span><span class="p">,</span> <span class="n">pred_target_bin</span> <span class="ow">in</span> <span class="n">bin_iter</span><span class="p">:</span>
+        <span class="c1"># Get mask for events in true/reco energy and true/reco composition bin</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="o">.</span><span class="n">reduce</span><span class="p">((</span><span class="n">true_ebin_indices</span> <span class="o">==</span> <span class="n">true_ebin</span><span class="p">,</span>
+                                      <span class="n">reco_ebin_indices</span> <span class="o">==</span> <span class="n">reco_ebin</span><span class="p">,</span>
+                                      <span class="n">true_target</span> <span class="o">==</span> <span class="n">true_target_bin</span><span class="p">,</span>
+                                      <span class="n">pred_target</span> <span class="o">==</span> <span class="n">pred_target_bin</span><span class="p">))</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">num_groups</span> <span class="o">*</span> <span class="n">reco_ebin</span> <span class="o">+</span> <span class="n">pred_target_bin</span><span class="p">,</span>
+            <span class="n">num_groups</span> <span class="o">*</span> <span class="n">true_ebin</span> <span class="o">+</span> <span class="n">true_target_bin</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="c1"># Calculate statistical error on response matrix</span>
+    <span class="n">res_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">res_err</span></div>
+
+
+<div class="viewcode-block" id="normalized_response_matrix"><a class="viewcode-back" href="../../comptools.html#comptools.unfolding.normalized_response_matrix">[docs]</a><span class="k">def</span> <span class="nf">normalized_response_matrix</span><span class="p">(</span><span class="n">true_energy</span><span class="p">,</span> <span class="n">reco_energy</span><span class="p">,</span> <span class="n">true_target</span><span class="p">,</span>
+                               <span class="n">pred_target</span><span class="p">,</span> <span class="n">efficiencies</span><span class="p">,</span> <span class="n">efficiencies_err</span><span class="p">,</span>
+                               <span class="n">energy_bins</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Computes normalized energy-composition response matrix</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    true_energy : array_like</span>
+<span class="sd">        Array of true (MC) energies.</span>
+<span class="sd">    reco_energy : array_like</span>
+<span class="sd">        Array of reconstructed energies.</span>
+<span class="sd">    true_target : array_like</span>
+<span class="sd">        Array of true compositions that are encoded to numerical values.</span>
+<span class="sd">    pred_target : array_like</span>
+<span class="sd">        Array of predicted compositions that are encoded to numerical values.</span>
+<span class="sd">    efficiencies : array_like</span>
+<span class="sd">        Detection efficiencies (should be in a PyUnfold-compatable form).</span>
+<span class="sd">    efficiencies_err : array_like</span>
+<span class="sd">        Detection efficiencies uncertainties (should be in a</span>
+<span class="sd">        PyUnfold-compatable form).</span>
+<span class="sd">    energy_bins : array_like, optional</span>
+<span class="sd">        Energy bins to be used for constructing response matrix (default is</span>
+<span class="sd">        to use energy bins from comptools.get_energybins() function).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    res_normalized : numpy.ndarray</span>
+<span class="sd">        Normalized response matrix.</span>
+<span class="sd">    res_normalized_err : numpy.ndarray</span>
+<span class="sd">        Uncerainty of the normalized response matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span><span class="p">,</span> <span class="n">res_err</span> <span class="o">=</span> <span class="n">response_matrix</span><span class="p">(</span><span class="n">true_energy</span><span class="o">=</span><span class="n">true_energy</span><span class="p">,</span>
+                                   <span class="n">reco_energy</span><span class="o">=</span><span class="n">reco_energy</span><span class="p">,</span>
+                                   <span class="n">true_target</span><span class="o">=</span><span class="n">true_target</span><span class="p">,</span>
+                                   <span class="n">pred_target</span><span class="o">=</span><span class="n">pred_target</span><span class="p">,</span>
+                                   <span class="n">energy_bins</span><span class="o">=</span><span class="n">energy_bins</span><span class="p">)</span>
+
+    <span class="c1"># Normalize response matrix column-wise (i.e. $P(E|C)$)</span>
+    <span class="n">res_normalized</span><span class="p">,</span> <span class="n">res_normalized_err</span> <span class="o">=</span> <span class="n">column_normalize</span><span class="p">(</span><span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span>
+                                                          <span class="n">res_err</span><span class="o">=</span><span class="n">res_err</span><span class="p">,</span>
+                                                          <span class="n">efficiencies</span><span class="o">=</span><span class="n">efficiencies</span><span class="p">,</span>
+                                                          <span class="n">efficiencies_err</span><span class="o">=</span><span class="n">efficiencies_err</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">res_normalized</span><span class="p">,</span> <span class="n">res_normalized_err</span></div>
+
+
+<div class="viewcode-block" id="save_pyunfold_root_file"><a class="viewcode-back" href="../../comptools.html#comptools.unfolding.save_pyunfold_root_file">[docs]</a><span class="k">def</span> <span class="nf">save_pyunfold_root_file</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">formatted_df_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">res_mat_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">res_mat_err_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">get_paths</span><span class="p">()</span>
+
+    <span class="n">unfolding_dir</span>  <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paths</span><span class="o">.</span><span class="n">comp_data_dir</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="s1">&#39;unfolding&#39;</span><span class="p">)</span>
+    <span class="c1"># Bin Definitions</span>
+    <span class="n">binname</span> <span class="o">=</span> <span class="s1">&#39;bin0&#39;</span>
+    <span class="c1"># ROOT Output</span>
+    <span class="k">if</span> <span class="n">outfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">outfile</span>  <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unfolding_dir</span><span class="p">,</span>
+                                <span class="s1">&#39;pyunfold_input_</span><span class="si">{}</span><span class="s1">-groups.root&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_groups</span><span class="p">))</span>
+    <span class="n">check_output_dir</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">outfile</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">outfile</span><span class="p">)</span>
+
+    <span class="n">fout</span> <span class="o">=</span> <span class="n">TFile</span><span class="p">(</span><span class="n">outfile</span> <span class="p">,</span> <span class="s1">&#39;UPDATE&#39;</span><span class="p">)</span>
+    <span class="c1"># Check if bin directory exists, quit if so, otherwise create it!</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fout</span><span class="o">.</span><span class="n">GetDirectory</span><span class="p">(</span><span class="n">binname</span><span class="p">):</span>
+        <span class="n">pdir</span> <span class="o">=</span> <span class="n">fout</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">binname</span><span class="p">,</span> <span class="s1">&#39;Bin number 0&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fout</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">=========================</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Directory </span><span class="si">{}</span><span class="s1"> already exists!</span><span class="se">\n</span><span class="s1">Either try another &#39;</span>
+                         <span class="s1">&#39;bin number or delete </span><span class="si">{}</span><span class="s1"> and start again. &#39;</span>
+                         <span class="s1">&#39;Exiting...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">binname</span><span class="p">,</span> <span class="n">outfile</span><span class="p">))</span>
+
+    <span class="c1"># Go to home of ROOT file</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="n">binname</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">formatted_df_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">formatted_df_file</span>  <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">unfolding_dir</span><span class="p">,</span> <span class="s1">&#39;unfolding-df_</span><span class="si">{}</span><span class="s1">-groups.hdf&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_groups</span><span class="p">))</span>
+    <span class="n">df_flux</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="n">formatted_df_file</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">df_flux</span><span class="p">[</span><span class="s1">&#39;counts&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">if</span> <span class="s1">&#39;counts_err&#39;</span> <span class="ow">in</span> <span class="n">df_flux</span><span class="p">:</span>
+        <span class="n">counts_err</span> <span class="o">=</span> <span class="n">df_flux</span><span class="p">[</span><span class="s1">&#39;counts_err&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">counts_err</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">efficiencies</span> <span class="o">=</span> <span class="n">df_flux</span><span class="p">[</span><span class="s1">&#39;efficiencies&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">efficiencies_err</span> <span class="o">=</span> <span class="n">df_flux</span><span class="p">[</span><span class="s1">&#39;efficiencies_err&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="n">cbins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">carray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cbins</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">ebins</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">earray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ebins</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">cbins</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">ebins</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="c1"># Load response matrix array</span>
+    <span class="k">if</span> <span class="n">res_mat_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">res_mat_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unfolding_dir</span><span class="p">,</span>
+                                    <span class="s1">&#39;response_</span><span class="si">{}</span><span class="s1">-groups.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_groups</span><span class="p">))</span>
+    <span class="n">response_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">res_mat_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">res_mat_err_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">res_mat_err_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                                <span class="n">unfolding_dir</span><span class="p">,</span>
+                                <span class="s1">&#39;response_err_</span><span class="si">{}</span><span class="s1">-groups.txt&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_groups</span><span class="p">))</span>
+    <span class="n">response_err_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">res_mat_err_file</span><span class="p">)</span>
+
+    <span class="c1"># Measured effects distribution</span>
+    <span class="n">ne_meas</span> <span class="o">=</span> <span class="n">TH1F</span><span class="p">(</span><span class="s1">&#39;ne_meas&#39;</span><span class="p">,</span> <span class="s1">&#39;effects histogram&#39;</span><span class="p">,</span> <span class="n">ebins</span><span class="p">,</span> <span class="n">earray</span><span class="p">)</span>
+    <span class="n">ne_meas</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Effects&#39;</span><span class="p">)</span>
+    <span class="n">ne_meas</span><span class="o">.</span><span class="n">GetYaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Counts&#39;</span><span class="p">)</span>
+    <span class="n">ne_meas</span><span class="o">.</span><span class="n">SetStats</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ne_meas</span><span class="o">.</span><span class="n">Sumw2</span><span class="p">()</span>
+
+    <span class="c1"># Prepare Combined Weighted Histograms - To be Normalized by Model After Filling</span>
+    <span class="c1"># Isotropic Weights of Causes - For Calculating Combined Species Efficiency</span>
+    <span class="n">eff</span> <span class="o">=</span> <span class="n">TH1F</span><span class="p">(</span><span class="s1">&#39;Eff&#39;</span><span class="p">,</span> <span class="s1">&#39;Non-Normed Combined Efficiency&#39;</span><span class="p">,</span> <span class="n">cbins</span><span class="p">,</span> <span class="n">carray</span><span class="p">)</span>
+    <span class="n">eff</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Causes&#39;</span><span class="p">)</span>
+    <span class="n">eff</span><span class="o">.</span><span class="n">GetYaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Efficiency&#39;</span><span class="p">)</span>
+    <span class="n">eff</span><span class="o">.</span><span class="n">SetStats</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">eff</span><span class="o">.</span><span class="n">Sumw2</span><span class="p">()</span>
+
+    <span class="c1"># Isotropic Weighted Mixing Matrix - For Calculating Combined Species MM</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">TH2F</span><span class="p">(</span><span class="s1">&#39;MM&#39;</span><span class="p">,</span> <span class="s1">&#39;Weighted Combined Mixing Matrix&#39;</span><span class="p">,</span>
+                    <span class="n">cbins</span><span class="p">,</span> <span class="n">carray</span><span class="p">,</span> <span class="n">ebins</span><span class="p">,</span> <span class="n">earray</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Causes&#39;</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">GetYaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Effects&#39;</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">SetStats</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">Sumw2</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">ci</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cbins</span><span class="p">):</span>
+
+        <span class="c1"># Fill measured effects histogram</span>
+        <span class="n">ne_meas</span><span class="o">.</span><span class="n">SetBinContent</span><span class="p">(</span><span class="n">ci</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">counts</span><span class="p">[</span><span class="n">ci</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">counts_err</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ne_meas</span><span class="o">.</span><span class="n">SetBinError</span><span class="p">(</span><span class="n">ci</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="n">ci</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ne_meas</span><span class="o">.</span><span class="n">SetBinError</span><span class="p">(</span><span class="n">ci</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">counts_err</span><span class="p">[</span><span class="n">ci</span><span class="p">])</span>
+
+        <span class="c1"># Fill response matrix entries</span>
+        <span class="k">for</span> <span class="n">ek</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ebins</span><span class="p">):</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">SetBinContent</span><span class="p">(</span><span class="n">ci</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ek</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">response_array</span><span class="p">[</span><span class="n">ek</span><span class="p">][</span><span class="n">ci</span><span class="p">])</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">SetBinError</span><span class="p">(</span><span class="n">ci</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ek</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">response_err_array</span><span class="p">[</span><span class="n">ek</span><span class="p">][</span><span class="n">ci</span><span class="p">])</span>
+
+        <span class="c1"># Fill efficiency histogram from response matrix</span>
+        <span class="n">eff</span><span class="o">.</span><span class="n">SetBinContent</span><span class="p">(</span><span class="n">ci</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">efficiencies</span><span class="p">[</span><span class="n">ci</span><span class="p">])</span>
+        <span class="n">eff</span><span class="o">.</span><span class="n">SetBinError</span><span class="p">(</span><span class="n">ci</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">efficiencies_err</span><span class="p">[</span><span class="n">ci</span><span class="p">])</span>
+
+    <span class="c1"># Write measured effects histogram to file</span>
+    <span class="n">ne_meas</span><span class="o">.</span><span class="n">Write</span><span class="p">()</span>
+    <span class="c1"># Write the cause and effect arrays to file</span>
+    <span class="n">CARRAY</span> <span class="o">=</span> <span class="n">TH1F</span><span class="p">(</span><span class="s1">&#39;CARRAY&#39;</span><span class="p">,</span><span class="s1">&#39;Cause Array&#39;</span><span class="p">,</span> <span class="n">cbins</span><span class="p">,</span> <span class="n">carray</span><span class="p">)</span>
+    <span class="n">CARRAY</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Causes&#39;</span><span class="p">)</span>
+    <span class="n">EARRAY</span> <span class="o">=</span> <span class="n">TH1F</span><span class="p">(</span><span class="s1">&#39;EARRAY&#39;</span><span class="p">,</span><span class="s1">&#39;Effect Array&#39;</span><span class="p">,</span> <span class="n">ebins</span><span class="p">,</span> <span class="n">earray</span><span class="p">)</span>
+    <span class="n">EARRAY</span><span class="o">.</span><span class="n">GetXaxis</span><span class="p">()</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s1">&#39;Effects&#39;</span><span class="p">)</span>
+    <span class="n">CARRAY</span><span class="o">.</span><span class="n">Write</span><span class="p">()</span>
+    <span class="n">EARRAY</span><span class="o">.</span><span class="n">Write</span><span class="p">()</span>
+    <span class="c1"># Write efficiencies histogram to file</span>
+    <span class="n">eff</span><span class="o">.</span><span class="n">Write</span><span class="p">()</span>
+    <span class="c1"># Write response matrix to file</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">Write</span><span class="p">()</span>
+
+    <span class="n">fout</span><span class="o">.</span><span class="n">Write</span><span class="p">()</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">Close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="unfold"><a class="viewcode-back" href="../../comptools.html#comptools.unfolding.unfold">[docs]</a><span class="k">def</span> <span class="nf">unfold</span><span class="p">(</span><span class="n">config_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">EffDist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">priors</span><span class="o">=</span><span class="s1">&#39;Jeffreys&#39;</span><span class="p">,</span> <span class="n">input_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">ts</span><span class="o">=</span><span class="s1">&#39;ks&#39;</span><span class="p">,</span> <span class="n">ts_stopping</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">config_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;config_name must be provided&#39;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">input_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="c1"># Get the Configuration Parameters from the Config File</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">Utils</span><span class="o">.</span><span class="n">ConfigFM</span><span class="p">(</span><span class="n">config_name</span><span class="p">)</span>
+
+    <span class="c1"># Input Data ROOT File Name</span>
+    <span class="n">dataHeader</span> <span class="o">=</span> <span class="s1">&#39;data&#39;</span>
+    <span class="n">InputFile</span> <span class="o">=</span> <span class="n">input_file</span>
+    <span class="n">NE_meas_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dataHeader</span><span class="p">,</span> <span class="s1">&#39;ne_meas&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="c1"># isMC = config.get_boolean(dataHeader, &#39;ismc&#39;, default=False)</span>
+
+    <span class="c1"># Analysis Bin</span>
+    <span class="n">binHeader</span> <span class="o">=</span> <span class="s1">&#39;analysisbins&#39;</span>
+    <span class="n">binnumberStr</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">binHeader</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">stackFlag</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_boolean</span><span class="p">(</span><span class="n">binHeader</span><span class="p">,</span> <span class="s1">&#39;stack&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">binList</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;bin&#39;</span><span class="o">+</span><span class="n">val</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">binnumberStr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="n">nStack</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">binList</span><span class="p">)</span>
+
+    <span class="n">binnumber</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">stackFlag</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">binnumber</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">(</span><span class="n">binnumberStr</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">*** You have requested more than 1 analysis bin without stacking. </span><span class="se">\n\t</span><span class="s1">Please fix your mistake. Exiting... ***</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">unfbinname</span> <span class="o">=</span> <span class="s1">&#39;bin</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="n">binnumber</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">nStack</span><span class="o">&lt;=</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">mess</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">**** You have request to stack analysis bins, but have only requested </span><span class="si">%i</span><span class="s1"> bin, </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">nStack</span><span class="p">,</span> <span class="n">binList</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">mess</span> <span class="o">+=</span> <span class="s1">&#39; You need at least 2 bins to stack.</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">mess</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n\t</span><span class="s1">Please correct your mistake. Exiting... ***</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">unfbinname</span> <span class="o">=</span> <span class="s1">&#39;bin0&#39;</span>
+
+    <span class="c1"># Unfolder Options</span>
+    <span class="n">unfoldHeader</span> <span class="o">=</span> <span class="s1">&#39;unfolder&#39;</span>
+    <span class="n">UnfolderName</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">unfoldHeader</span><span class="p">,</span> <span class="s1">&#39;unfolder_name&#39;</span><span class="p">,</span>  <span class="n">default</span><span class="o">=</span><span class="s1">&#39;Unfolder&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">UnfMaxIter</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">unfoldHeader</span><span class="p">,</span> <span class="s1">&#39;max_iter&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">UnfSmoothIter</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_boolean</span><span class="p">(</span><span class="n">unfoldHeader</span><span class="p">,</span> <span class="s1">&#39;smooth_with_reg&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">UnfVerbFlag</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_boolean</span><span class="p">(</span><span class="n">unfoldHeader</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Get Prior Definition</span>
+    <span class="c1"># priorHeader = &#39;prior&#39;</span>
+    <span class="c1"># priorString = config.get(priorHeader,&#39;func&#39;,default=&#39;Jeffreys&#39;,cast=str)</span>
+    <span class="c1"># priorList = [val for val in priorString.split(&#39;,&#39;)]</span>
+    <span class="c1"># nPriorFuncs = len(priorList)</span>
+    <span class="c1"># if nPriorFuncs != nStack:</span>
+    <span class="c1">#     if nPriorFuncs == 1:</span>
+    <span class="c1">#         for i in range(nStack-1):</span>
+    <span class="c1">#             priorList.append(priorList[0])</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         mess = &#39;\n**** You have requested an incorrect number of prior functions (%i), but there are %i analysis bins.&#39;%(nPriorFuncs,nStack)</span>
+    <span class="c1">#         raise ValueError(mess+&#39;\n\tPlease correct your mistake. Exiting... ***\n&#39;)</span>
+
+    <span class="c1"># Mixer Name and Error Propagation Type</span>
+    <span class="c1"># Options: ACM, DCM</span>
+    <span class="n">mixHeader</span> <span class="o">=</span> <span class="s1">&#39;mixer&#39;</span>
+    <span class="n">MixName</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mixHeader</span><span class="p">,</span> <span class="s1">&#39;mix_name&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">CovError</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mixHeader</span><span class="p">,</span> <span class="s1">&#39;error_type&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># Test Statistic - Stat Function &amp; Options</span>
+    <span class="c1"># Options: chi2, rmd, pf, ks</span>
+    <span class="n">tsname</span> <span class="o">=</span> <span class="n">ts</span>
+    <span class="n">tsTol</span> <span class="o">=</span> <span class="n">ts_stopping</span>
+    <span class="n">tsRange</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">]</span>
+    <span class="n">tsVerbFlag</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># tsHeader = &#39;teststatistic&#39;</span>
+    <span class="c1"># tsRangeStr = config.get(tsHeader, &#39;ts_range&#39;, cast=str)</span>
+    <span class="c1"># tsname = config.get(tsHeader, &#39;ts_name&#39;, default=&#39;rmd&#39;, cast=str)</span>
+    <span class="c1"># tsTol = config.get(tsHeader, &#39;ts_tolerance&#39;, cast=float)</span>
+    <span class="c1"># tsRange = [float(val) for val in tsRangeStr.split(&#39;,&#39;)]</span>
+    <span class="c1"># tsVerbFlag = config.get_boolean(tsHeader, &#39;verbose&#39;, default=False)</span>
+
+    <span class="c1"># Regularization Function, Initial Parameters, &amp; Options</span>
+    <span class="n">regHeader</span> <span class="o">=</span> <span class="s1">&#39;regularization&#39;</span>
+    <span class="n">RegFunc</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;reg_func&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="c1">#  Param Names</span>
+    <span class="n">ConfigParamNames</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;param_names&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">ParamNames</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ConfigParamNames</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="c1">#  Initial Parameters</span>
+    <span class="n">IPars</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;param_init&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">InitParams</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">IPars</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="c1">#  Limits</span>
+    <span class="n">PLow</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;param_lim_lo&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">PLimLo</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">PLow</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="n">PHigh</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;param_lim_hi&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">PLimHi</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">PHigh</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="n">RegRangeStr</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;reg_range&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">RegRange</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">RegRangeStr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+    <span class="c1">#  Options</span>
+    <span class="n">RegPFlag</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_boolean</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">RegVFlag</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_boolean</span><span class="p">(</span><span class="n">regHeader</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Get MCInput</span>
+    <span class="n">mcHeader</span> <span class="o">=</span> <span class="s1">&#39;mcinput&#39;</span>
+    <span class="c1"># StatsFile = config.get(mcHeader, &#39;stats_file&#39;, default=&#39;&#39;, cast=str)</span>
+    <span class="n">StatsFile</span> <span class="o">=</span> <span class="n">input_file</span>
+    <span class="n">Eff_hist_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mcHeader</span><span class="p">,</span> <span class="s1">&#39;eff_hist&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">MM_hist_name</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mcHeader</span><span class="p">,</span> <span class="s1">&#39;mm_hist&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># Setup the Observed and MC Data Arrays</span>
+    <span class="c1"># Load MC Stats (NCmc), Cause Efficiency (Eff) and Migration Matrix ( P(E|C) )</span>
+    <span class="n">MCStats</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">LoadStats</span><span class="o">.</span><span class="n">MCTables</span><span class="p">(</span><span class="n">StatsFile</span><span class="p">,</span> <span class="n">BinName</span><span class="o">=</span><span class="n">binList</span><span class="p">,</span>
+        <span class="n">RespMatrixName</span><span class="o">=</span><span class="n">MM_hist_name</span><span class="p">,</span> <span class="n">EffName</span><span class="o">=</span><span class="n">Eff_hist_name</span><span class="p">,</span> <span class="n">Stack</span><span class="o">=</span><span class="n">stackFlag</span><span class="p">)</span>
+    <span class="n">Caxis</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Cedges</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cutList</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nStack</span><span class="p">):</span>
+        <span class="n">axis</span><span class="p">,</span> <span class="n">edge</span> <span class="o">=</span> <span class="n">MCStats</span><span class="o">.</span><span class="n">GetCauseAxis</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">Caxis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+        <span class="n">Cedges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+    <span class="n">Eaxis</span><span class="p">,</span> <span class="n">Eedges</span> <span class="o">=</span> <span class="n">MCStats</span><span class="o">.</span><span class="n">GetEffectAxis</span><span class="p">()</span>
+    <span class="c1"># Effect and Cause X and Y Labels from Respective Histograms</span>
+    <span class="n">Cxlab</span><span class="p">,</span> <span class="n">Cylab</span><span class="p">,</span> <span class="n">Ctitle</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">rr</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">StatsFile</span><span class="p">,</span> <span class="n">Eff_hist_name</span><span class="p">,</span> <span class="n">binList</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Load the Observed Data (n_eff), define total observed events (n_obs)</span>
+    <span class="c1"># Get from ROOT input file if requested</span>
+    <span class="k">if</span> <span class="n">EffDist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Exlab</span><span class="p">,</span> <span class="n">Eylab</span><span class="p">,</span> <span class="n">Etitle</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">rr</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">InputFile</span><span class="p">,</span> <span class="n">NE_meas_name</span><span class="p">,</span>
+                                             <span class="n">unfbinname</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">Eaxis</span><span class="p">,</span> <span class="n">Eedges</span><span class="p">,</span> <span class="n">n_eff</span><span class="p">,</span> <span class="n">n_eff_err</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">rr</span><span class="o">.</span><span class="n">get1d</span><span class="p">(</span><span class="n">InputFile</span><span class="p">,</span> <span class="n">NE_meas_name</span><span class="p">,</span>
+                                                   <span class="n">unfbinname</span><span class="p">)</span>
+        <span class="n">EffDist</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">Utils</span><span class="o">.</span><span class="n">DataDist</span><span class="p">(</span><span class="n">Etitle</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">n_eff</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">n_eff_err</span><span class="p">,</span>
+                                 <span class="n">axis</span><span class="o">=</span><span class="n">Eaxis</span><span class="p">,</span> <span class="n">edges</span><span class="o">=</span><span class="n">Eedges</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="n">Exlab</span><span class="p">,</span>
+                                 <span class="n">ylabel</span><span class="o">=</span><span class="n">Eylab</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">Exlab</span> <span class="o">=</span> <span class="n">EffDist</span><span class="o">.</span><span class="n">xlab</span>
+    <span class="n">Eylab</span> <span class="o">=</span> <span class="n">EffDist</span><span class="o">.</span><span class="n">ylab</span>
+    <span class="n">Etitle</span> <span class="o">=</span> <span class="n">EffDist</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">n_eff</span> <span class="o">=</span> <span class="n">EffDist</span><span class="o">.</span><span class="n">getData</span><span class="p">()</span>
+    <span class="n">n_eff_err</span> <span class="o">=</span> <span class="n">EffDist</span><span class="o">.</span><span class="n">getError</span><span class="p">()</span>
+    <span class="n">n_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">n_eff</span><span class="p">)</span>
+
+    <span class="c1"># Initial best guess (0th prior) expected prob dist (default: Jeffrey&#39;s Prior)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
+        <span class="n">n_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">priors</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">priors</span> <span class="o">==</span> <span class="s1">&#39;Jeffreys&#39;</span><span class="p">:</span>
+        <span class="n">n_c</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">Utils</span><span class="o">.</span><span class="n">UserPrior</span><span class="p">([</span><span class="s1">&#39;Jeffreys&#39;</span><span class="p">],</span> <span class="n">Caxis</span><span class="p">,</span> <span class="n">n_obs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;priors must be a np.ndarray, &#39;</span>
+                        <span class="s1">&#39;but got </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">priors</span><span class="p">)))</span>
+
+    <span class="c1"># Setup the Tools Used in Unfolding</span>
+    <span class="c1"># Prepare Regularizer</span>
+    <span class="n">Rglzr</span> <span class="o">=</span> <span class="p">[</span><span class="n">PyUnfold</span><span class="o">.</span><span class="n">Utils</span><span class="o">.</span><span class="n">Regularizer</span><span class="p">(</span><span class="s1">&#39;REG&#39;</span><span class="p">,</span> <span class="n">FitFunc</span><span class="o">=</span><span class="p">[</span><span class="n">RegFunc</span><span class="p">],</span> <span class="n">Range</span><span class="o">=</span><span class="n">RegRange</span><span class="p">,</span>
+                <span class="n">InitialParams</span><span class="o">=</span><span class="n">InitParams</span><span class="p">,</span> <span class="n">ParamLo</span><span class="o">=</span><span class="n">PLimLo</span><span class="p">,</span> <span class="n">ParamHi</span><span class="o">=</span><span class="n">PLimHi</span><span class="p">,</span>
+                <span class="n">ParamNames</span><span class="o">=</span><span class="n">ParamNames</span><span class="p">,</span> <span class="n">xarray</span><span class="o">=</span><span class="n">Caxis</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">xedges</span><span class="o">=</span><span class="n">Cedges</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">RegVFlag</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">RegPFlag</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nStack</span><span class="p">)]</span>
+    <span class="c1"># Prepare Test Statistic-er</span>
+    <span class="n">tsMeth</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">Utils</span><span class="o">.</span><span class="n">GetTS</span><span class="p">(</span><span class="n">tsname</span><span class="p">)</span>
+    <span class="n">tsFunc</span> <span class="o">=</span> <span class="p">[</span><span class="n">tsMeth</span><span class="p">(</span><span class="n">tsname</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tsTol</span><span class="p">,</span> <span class="n">Xaxis</span><span class="o">=</span><span class="n">Caxis</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">TestRange</span><span class="o">=</span><span class="n">tsRange</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">tsVerbFlag</span><span class="p">)</span>
+              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nStack</span><span class="p">)]</span>
+
+    <span class="c1"># Prepare Mixer</span>
+    <span class="n">Mixer</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">Mix</span><span class="o">.</span><span class="n">Mixer</span><span class="p">(</span><span class="n">MixName</span><span class="p">,</span> <span class="n">ErrorType</span><span class="o">=</span><span class="n">CovError</span><span class="p">,</span> <span class="n">MCTables</span><span class="o">=</span><span class="n">MCStats</span><span class="p">,</span>
+                               <span class="n">EffectsDist</span><span class="o">=</span><span class="n">EffDist</span><span class="p">)</span>
+
+    <span class="c1"># Unfolder!!!</span>
+    <span class="k">if</span> <span class="n">stackFlag</span><span class="p">:</span>
+        <span class="n">UnfolderName</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">binList</span><span class="p">)</span>
+
+    <span class="n">Unfolder</span> <span class="o">=</span> <span class="n">PyUnfold</span><span class="o">.</span><span class="n">IterUnfold</span><span class="o">.</span><span class="n">IterativeUnfolder</span><span class="p">(</span>
+        <span class="n">UnfolderName</span><span class="p">,</span> <span class="n">maxIter</span><span class="o">=</span><span class="n">UnfMaxIter</span><span class="p">,</span> <span class="n">smoothIter</span><span class="o">=</span><span class="n">UnfSmoothIter</span><span class="p">,</span> <span class="n">n_c</span><span class="o">=</span><span class="n">n_c</span><span class="p">,</span>
+        <span class="n">MixFunc</span><span class="o">=</span><span class="n">Mixer</span><span class="p">,</span> <span class="n">RegFunc</span><span class="o">=</span><span class="n">Rglzr</span><span class="p">,</span> <span class="n">TSFunc</span><span class="o">=</span><span class="n">tsFunc</span><span class="p">,</span> <span class="n">Stack</span><span class="o">=</span><span class="n">stackFlag</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">UnfVerbFlag</span><span class="p">)</span>
+    <span class="c1"># Iterate the Unfolder</span>
+    <span class="n">unfolding_result</span> <span class="o">=</span> <span class="n">Unfolder</span><span class="o">.</span><span class="n">IUnfold</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">unfolding_result</span></div>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, James Bourbeau.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
